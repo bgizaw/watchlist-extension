@@ -120,8 +120,15 @@ function finalizeSession(video, reason) {
       .catch(() => {});
   }
 
-  state.reported = true;
-  tracked.delete(video);
+  if (reason === 'pause') {
+    // The video may resume playing later (buffering, ads, a manual pause) —
+    // keep it in `tracked` so play/playing events keep accumulating a new
+    // session instead of being silently ignored by tick()'s `!state` guard.
+    tracked.set(video, newState());
+  } else {
+    state.reported = true;
+    tracked.delete(video);
+  }
 }
 
 function attachVideo(video) {
