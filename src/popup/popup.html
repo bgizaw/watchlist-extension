@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Watch Time Tracker</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="popup">
+    <header class="popup-header">
+      <span class="dot"></span>
+      <h1>Watch Time</h1>
+    </header>
+
+    <section class="stats-row">
+      <div class="stat">
+        <span class="stat-value" id="stat-today">0m</span>
+        <span class="stat-label">Today</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-week">0m</span>
+        <span class="stat-label">This week</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-month">0m</span>
+        <span class="stat-label">This month</span>
+      </div>
+    </section>
+
+    <section class="top-list">
+      <h2>Top watched</h2>
+      <ul id="top-list"></ul>
+      <p id="top-empty" class="empty" hidden>No watch sessions logged yet. Play a video for 30+ seconds anywhere on the web.</p>
+    </section>
+
+    <button id="open-dashboard" class="primary-btn">Open full dashboard</button>
+  </div>
+
+  <script src="../lib/vendor/browser-polyfill.min.js"></script>
+  <script src="../lib/db.js"></script>
+  <script src="../lib/titleHeuristics.js"></script>
+  <script src="../lib/analytics.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Watch Time Tracker",
+  "version": "0.1.0",
+  "description": "Automatically tracks video watch time across the web and shows organized, time-based analytics. All data stays on this device.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "scripts": [
+      "src/lib/vendor/browser-polyfill.min.js",
+      "src/lib/db.js",
+      "src/lib/titleHeuristics.js",
+      "src/background/background-core.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/lib/vendor/browser-polyfill.min.js", "src/content/content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "watch-time-tracker@local.extension",
+      "strict_min_version": "115.0"
+    }
+  }
+}

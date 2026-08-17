@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Watch Time Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>Watch Time Dashboard</h1>
+      </div>
+      <div class="range-toggle" id="range-toggle">
+        <button data-range="day" class="active">Day</button>
+        <button data-range="week">Week</button>
+        <button data-range="month">Month</button>
+        <button data-range="all">All time</button>
+      </div>
+    </header>
+
+    <section class="totals-grid">
+      <div class="card total-card">
+        <span class="total-label">Today</span>
+        <span class="total-value" id="total-today">0m</span>
+      </div>
+      <div class="card total-card">
+        <span class="total-label">This week</span>
+        <span class="total-value" id="total-week">0m</span>
+      </div>
+      <div class="card total-card">
+        <span class="total-label">This month</span>
+        <span class="total-value" id="total-month">0m</span>
+      </div>
+      <div class="card total-card">
+        <span class="total-label">All time</span>
+        <span class="total-value" id="total-all">0m</span>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="card chart-card">
+        <h2>Daily trend (last 14 days)</h2>
+        <canvas id="trend-chart" height="140"></canvas>
+      </div>
+
+      <div class="card breakdown-card">
+        <h2>Top watched</h2>
+        <ol id="breakdown-list" class="breakdown-list"></ol>
+        <p id="breakdown-empty" class="empty" hidden>Nothing tracked in this range yet.</p>
+      </div>
+    </section>
+
+    <section class="card sessions-card">
+      <div class="sessions-header">
+        <h2>Recent sessions</h2>
+        <span class="hint">Filtered to the selected range above</span>
+      </div>
+      <table class="sessions-table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Title / Channel</th>
+            <th>Domain</th>
+            <th>Watched</th>
+          </tr>
+        </thead>
+        <tbody id="sessions-body"></tbody>
+      </table>
+      <p id="sessions-empty" class="empty" hidden>No sessions in this range.</p>
+    </section>
+  </div>
+
+  <script src="../lib/vendor/browser-polyfill.min.js"></script>
+  <script src="../lib/vendor/chart.umd.min.js"></script>
+  <script src="../lib/db.js"></script>
+  <script src="../lib/titleHeuristics.js"></script>
+  <script src="../lib/analytics.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
