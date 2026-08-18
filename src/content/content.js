@@ -13,8 +13,57 @@ const PROGRESS_REPORT_MS = 5000;
 let currentUrl = location.href;
 let tracked = new Map(); // video element -> tracking state
 
+const IS_TOP_FRAME = window === window.top;
+
 function nowMs() {
   return Date.now();
+}
+
+function getGenericTitle() {
+  const metaSelectors = [
+    'meta[property="og:title"]',
+    'meta[name="twitter:title"]',
+    'meta[name="title"]',
+  ];
+  for (const sel of metaSelectors) {
+    const el = document.querySelector(sel);
+    const content = el && el.getAttribute('content');
+    if (content && content.trim()) return content.trim();
+  }
+
+  browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message && message.type === 'REQUEST_TOP_TITLE' && sender.tab) {
+    browser.tabs
+      .sendMessage(sender.tab.id, { type: 'REQUEST_FRAME_TITLE' }, { frameId: 0 })
+      .then((res) => sendResponse(res))
+      .catch(() => sendResponse({ title: null }));
+    return true;
+  }
+
+  if (!message || message.type !== 'WATCH_SESSION') return undefined;
+  handleWatchSession(message.payload)
+    .then(() => sendResponse({ ok: true }))
+    .catch((err) => sendResponse({ ok: false, error: String(err) }));
+  return true; // keep the message channel open for the async response
+});
+
+  // Fall back to the most title-like heading on the page.
+  const headingSelectors = [
+    'h1.entry-title',
+    'h1[itemprop="name"]',
+    '.video-title',
+    '.entry-title',
+    'article h1',
+    'h1',
+  ];
+  for (const sel of headingSelectors) {
+    const el = document.querySelector(sel);
+    if (el && el.textContent && el.textContent.trim().length > 2) {
+      return el.textContent.trim();
+    }
+  }
+
+  return document.title;
 }
 
 function getYouTubeChannelName() {
@@ -46,7 +95,7 @@ function getYouTubeVideoTitle() {
   return (el.getAttribute && el.getAttribute('content')) || el.textContent || document.title;
 }
 
-function getPageMeta() {
+async function getPageMeta() {
   const isYouTube = /(^|\.)youtube\.com$/.test(location.hostname);
   if (isYouTube) {
     return {
@@ -56,11 +105,24 @@ function getPageMeta() {
       rawTitle: document.title,
     };
   }
+
+  let rawTitle = getGenericTitle();
+  if (!IS_TOP_FRAME) {
+    try {
+    console.log('[watch-tracker] requesting top title...');
+    const res = await browser.runtime.sendMessage({ type: 'REQUEST_TOP_TITLE' });
+    console.log('[watch-tracker] got response:', res);
+    if (res && res.title) rawTitle = res.title;
+  } catch (e) {
+    console.log('[watch-tracker] relay failed:', e);
+    }
+  }
+
   return {
     isYouTube: false,
     channelName: null,
     videoTitle: null,
-    rawTitle: document.title,
+    rawTitle,
   };
 }
 
@@ -94,14 +156,14 @@ function tick(video) {
   }
 }
 
-function finalizeSession(video, reason) {
+async function finalizeSession(video, reason) {
   const state = tracked.get(video);
   if (!state || state.reported) return;
   tick(video);
 
   const activeSeconds = state.activeMs / 1000;
   if (activeSeconds >= MIN_SESSION_SECONDS && state.startedAt) {
-    const meta = getPageMeta();
+    const meta = await getPageMeta();
     const endTime = nowMs();
     const startTime = endTime - state.activeMs;
 

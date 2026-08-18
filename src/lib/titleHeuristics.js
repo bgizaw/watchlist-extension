@@ -18,6 +18,11 @@
     /\bs\d{1,2}e\d{1,3}\b/gi,
     /\bstream(ing)?\b/gi,
     /\bonline\s+free\b/gi,
+    /\beng(?:lish)?\s*sub(?:bed)?\b/gi,
+    /\bdubbed?\b/gi,
+    /\bgogoanime\b/gi,
+    /\b9anime\b/gi,
+    /\bkissanime\b/gi,
   ];
 
   const SEPARATORS = [' | ', ' - ', ' – ', ' — ', ' :: ', ' » '];
@@ -40,6 +45,8 @@
         }
       }
     }
+
+    title = stripDomainMentions(title, siteName);   // new
 
     for (const pattern of JUNK_PATTERNS) {
       title = title.replace(pattern, ' ');
@@ -80,6 +87,14 @@
     }
     return dp[n];
   }
+
+  function stripDomainMentions(title, domain) {
+  if (!domain) return title;
+  const domainCore = domain.replace(/^www\./, '').split('.')[0]; // "strm" from "strm.cx"
+  if (domainCore.length < 3) return title;
+  const pattern = new RegExp(`\\b${domainCore}(\\.[a-z]{2,4})?\\b`, 'gi');
+  return title.replace(pattern, ' ');
+}
 
   function titleSimilarity(a, b) {
     const na = normalizeForMatch(a);

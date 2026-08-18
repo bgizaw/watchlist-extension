@@ -49,9 +49,17 @@ async function handleWatchSession(payload) {
 }
 
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message && message.type === 'REQUEST_TOP_TITLE' && sender.tab) {
+    browser.tabs
+      .sendMessage(sender.tab.id, { type: 'REQUEST_FRAME_TITLE' }, { frameId: 0 })
+      .then((res) => sendResponse(res))
+      .catch(() => sendResponse({ title: null }));
+    return true;
+  }
+
   if (!message || message.type !== 'WATCH_SESSION') return undefined;
   handleWatchSession(message.payload)
     .then(() => sendResponse({ ok: true }))
     .catch((err) => sendResponse({ ok: false, error: String(err) }));
-  return true; // keep the message channel open for the async response
+  return true;
 });
